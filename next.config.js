@@ -42,6 +42,14 @@ const nextConfig = {
         protocol: "https",
         hostname: "medusa-server-testing.s3.us-east-1.amazonaws.com",
       },
+      {
+        protocol: "https",
+        hostname: "*.sfo3.cdn.digitaloceanspaces.com",
+      },
+      {
+        protocol: "https",
+        hostname: "*.sfo3.digitaloceanspaces.com",
+      },
       ...(S3_HOSTNAME && S3_PATHNAME
         ? [
             {
