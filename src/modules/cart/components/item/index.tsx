@@ -13,7 +13,7 @@ import LocalizedClientLink from "@modules/common/components/localized-client-lin
 import Spinner from "@modules/common/icons/spinner"
 import Thumbnail from "@modules/products/components/thumbnail"
 import { useState, useMemo } from "react"
-import { formatTimeForDisplay, formatDateForDisplay } from "@lib/data/booking"
+import { formatTimeForDisplay, formatDateForDisplay } from "@lib/data/booking-utils"
 
 type ItemProps = {
   item: HttpTypes.StoreCartLineItem

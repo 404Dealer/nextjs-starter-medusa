@@ -1,6 +1,6 @@
 import { HttpTypes } from "@medusajs/types"
 import { Heading, Text } from "@medusajs/ui"
-import { formatTimeForDisplay, formatDateForDisplay } from "@lib/data/booking"
+import { formatTimeForDisplay, formatDateForDisplay } from "@lib/data/booking-utils"
 
 interface AppointmentConfirmationProps {
   order: HttpTypes.StoreOrder

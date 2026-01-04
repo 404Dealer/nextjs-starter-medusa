@@ -118,10 +118,3 @@ export async function releaseSlotHold(
     body,
   })
 }
-
-// Re-export utility functions from booking-utils.ts for convenience
-export {
-  calculateEndTime,
-  formatTimeForDisplay,
-  formatDateForDisplay,
-} from "./booking-utils"

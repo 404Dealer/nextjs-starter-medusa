@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react"
 import { Button } from "@medusajs/ui"
-import { getAvailableSlots, formatTimeForDisplay, TimeSlot } from "@lib/data/booking"
+import { getAvailableSlots, TimeSlot } from "@lib/data/booking"
+import { formatTimeForDisplay } from "@lib/data/booking-utils"
 
 interface AppointmentPickerProps {
   blockMinutes?: number
