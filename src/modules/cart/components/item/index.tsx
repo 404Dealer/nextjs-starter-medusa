@@ -12,7 +12,8 @@ import LineItemUnitPrice from "@modules/common/components/line-item-unit-price"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import Spinner from "@modules/common/icons/spinner"
 import Thumbnail from "@modules/products/components/thumbnail"
-import { useState } from "react"
+import { useState, useMemo } from "react"
+import { formatTimeForDisplay, formatDateForDisplay } from "@lib/data/booking"
 
 type ItemProps = {
   item: HttpTypes.StoreCartLineItem
@@ -23,6 +24,18 @@ type ItemProps = {
 const Item = ({ item, type = "full", currencyCode }: ItemProps) => {
   const [updating, setUpdating] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // Check if this item is a booking with appointment info
+  const appointmentInfo = useMemo(() => {
+    const metadata = item.metadata as Record<string, unknown> | undefined
+    if (metadata?.appointment_date && metadata?.appointment_time) {
+      return {
+        date: metadata.appointment_date as string,
+        time: metadata.appointment_time as string,
+      }
+    }
+    return null
+  }, [item.metadata])
 
   const changeQuantity = async (quantity: number) => {
     setError(null)
@@ -70,6 +83,19 @@ const Item = ({ item, type = "full", currencyCode }: ItemProps) => {
           {item.product_title}
         </Text>
         <LineItemOptions variant={item.variant} data-testid="product-variant" />
+        {/* Show appointment info for bookable items */}
+        {appointmentInfo && (
+          <div className="mt-2 text-sm text-ui-fg-subtle bg-ui-bg-subtle rounded-md px-2 py-1">
+            <div className="flex items-center gap-1">
+              <span>📅</span>
+              <span>{formatDateForDisplay(appointmentInfo.date)}</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <span>🕐</span>
+              <span>{formatTimeForDisplay(appointmentInfo.time)}</span>
+            </div>
+          </div>
+        )}
       </Table.Cell>
 
       {type === "full" && (

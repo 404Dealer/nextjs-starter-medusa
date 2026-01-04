@@ -6,6 +6,7 @@ import { HttpTypes } from "@medusajs/types"
 import { Button } from "@medusajs/ui"
 import Divider from "@modules/common/components/divider"
 import OptionSelect from "@modules/products/components/product-actions/option-select"
+import AppointmentPicker from "@modules/booking/components/appointment-picker"
 import { isEqual } from "lodash"
 import { useParams, usePathname, useSearchParams } from "next/navigation"
 import { useEffect, useMemo, useRef, useState } from "react"
@@ -17,6 +18,12 @@ type ProductActionsProps = {
   product: HttpTypes.StoreProduct
   region: HttpTypes.StoreRegion
   disabled?: boolean
+}
+
+interface AppointmentSelection {
+  date: string
+  time: string
+  endTime: string
 }
 
 const optionsAsKeymap = (
@@ -38,7 +45,23 @@ export default function ProductActions({
 
   const [options, setOptions] = useState<Record<string, string | undefined>>({})
   const [isAdding, setIsAdding] = useState(false)
+  const [appointment, setAppointment] = useState<AppointmentSelection | null>(null)
   const countryCode = useParams().countryCode as string
+
+  // Check if this product is bookable (has is_bookable metadata)
+  const isBookable = useMemo(() => {
+    const metadata = product.metadata as Record<string, unknown> | undefined
+    return metadata?.is_bookable === true || metadata?.is_bookable === "true"
+  }, [product.metadata])
+
+  // Get booking configuration from product metadata
+  const bookingConfig = useMemo(() => {
+    const metadata = product.metadata as Record<string, unknown> | undefined
+    return {
+      blockMinutes: (metadata?.block_minutes as number) || 60,
+      slotIncrement: (metadata?.slot_increment as number) || 15,
+    }
+  }, [product.metadata])
 
   // If there is only 1 variant, preselect the options
   useEffect(() => {
@@ -120,19 +143,68 @@ export default function ProductActions({
 
   const inView = useIntersection(actionsRef, "0px")
 
+  // Handle appointment slot selection
+  const handleSelectSlot = (date: string, time: string, endTime: string) => {
+    setAppointment({ date, time, endTime })
+  }
+
   // add the selected variant to the cart
   const handleAddToCart = async () => {
     if (!selectedVariant?.id) return null
 
+    // For bookable products, require appointment selection
+    if (isBookable && !appointment) return null
+
     setIsAdding(true)
+
+    // Build metadata for bookable products
+    const metadata = isBookable && appointment
+      ? {
+          appointment_date: appointment.date,
+          appointment_time: appointment.time,
+          appointment_end: appointment.endTime,
+        }
+      : undefined
 
     await addToCart({
       variantId: selectedVariant.id,
       quantity: 1,
       countryCode,
+      metadata,
     })
 
+    // Reset appointment selection after adding
+    if (isBookable) {
+      setAppointment(null)
+    }
+
     setIsAdding(false)
+  }
+
+  // Check if add to cart should be disabled
+  const isAddToCartDisabled = useMemo(() => {
+    if (!inStock || !selectedVariant || disabled || isAdding || !isValidVariant) {
+      return true
+    }
+    // For bookable products, require appointment selection
+    if (isBookable && !appointment) {
+      return true
+    }
+    return false
+  }, [inStock, selectedVariant, disabled, isAdding, isValidVariant, isBookable, appointment])
+
+  // Determine button text
+  const getButtonText = () => {
+    if (!selectedVariant && !options) {
+      return "Select variant"
+    }
+    if (!inStock || !isValidVariant) {
+      return "Out of stock"
+    }
+    if (isBookable && !appointment) {
+      return "Select appointment time"
+    }
+    return isBookable ? "Book Appointment" : "Add to cart"
   }
 
   return (
@@ -162,25 +234,33 @@ export default function ProductActions({
 
         <ProductPrice product={product} variant={selectedVariant} />
 
+        {/* Show appointment picker for bookable products */}
+        {isBookable && selectedVariant && (
+          <>
+            <Divider />
+            <div className="py-2">
+              <AppointmentPicker
+                blockMinutes={bookingConfig.blockMinutes}
+                slotIncrement={bookingConfig.slotIncrement}
+                onSelectSlot={handleSelectSlot}
+                selectedDate={appointment?.date}
+                selectedTime={appointment?.time}
+                disabled={!!disabled || isAdding}
+              />
+            </div>
+            <Divider />
+          </>
+        )}
+
         <Button
           onClick={handleAddToCart}
-          disabled={
-            !inStock ||
-            !selectedVariant ||
-            !!disabled ||
-            isAdding ||
-            !isValidVariant
-          }
+          disabled={isAddToCartDisabled}
           variant="primary"
           className="w-full h-10"
           isLoading={isAdding}
           data-testid="add-product-button"
         >
-          {!selectedVariant && !options
-            ? "Select variant"
-            : !inStock || !isValidVariant
-            ? "Out of stock"
-            : "Add to cart"}
+          {getButtonText()}
         </Button>
         <MobileActions
           product={product}
