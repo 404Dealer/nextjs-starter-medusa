@@ -162,7 +162,7 @@ export default function ProductActions({
       ? {
           appointment_date: appointment.date,
           appointment_time: appointment.time,
-          appointment_end: appointment.endTime,
+          block_minutes: bookingConfig.blockMinutes,
         }
       : undefined
 
