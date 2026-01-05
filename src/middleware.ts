@@ -13,50 +13,72 @@ const regionMapCache = {
 async function getRegionMap(cacheId: string) {
   const { regionMap, regionMapUpdated } = regionMapCache
 
+  // If no backend URL, use a fallback region map for the booking-only mode
   if (!BACKEND_URL) {
-    throw new Error(
-      "Middleware.ts: Error fetching regions. Did you set up regions in your Medusa Admin and define a MEDUSA_BACKEND_URL environment variable? Note that the variable is no longer named NEXT_PUBLIC_MEDUSA_BACKEND_URL."
-    )
+    if (!regionMap.has(DEFAULT_REGION)) {
+      // Create a minimal fallback region for booking-only mode
+      const fallbackRegion: HttpTypes.StoreRegion = {
+        id: "fallback",
+        name: "Default",
+        currency_code: "usd",
+        countries: [{ iso_2: DEFAULT_REGION }],
+      } as HttpTypes.StoreRegion
+      regionMapCache.regionMap.set(DEFAULT_REGION, fallbackRegion)
+    }
+    return regionMapCache.regionMap
   }
 
   if (
     !regionMap.keys().next().value ||
     regionMapUpdated < Date.now() - 3600 * 1000
   ) {
-    // Fetch regions from Medusa. We can't use the JS client here because middleware is running on Edge and the client needs a Node environment.
-    const { regions } = await fetch(`${BACKEND_URL}/store/regions`, {
-      headers: {
-        "x-publishable-api-key": PUBLISHABLE_API_KEY!,
-      },
-      next: {
-        revalidate: 3600,
-        tags: [`regions-${cacheId}`],
-      },
-      cache: "force-cache",
-    }).then(async (response) => {
-      const json = await response.json()
+    try {
+      // Fetch regions from Medusa. We can't use the JS client here because middleware is running on Edge and the client needs a Node environment.
+      const { regions } = await fetch(`${BACKEND_URL}/store/regions`, {
+        headers: {
+          "x-publishable-api-key": PUBLISHABLE_API_KEY!,
+        },
+        next: {
+          revalidate: 3600,
+          tags: [`regions-${cacheId}`],
+        },
+        cache: "force-cache",
+      }).then(async (response) => {
+        const json = await response.json()
 
-      if (!response.ok) {
-        throw new Error(json.message)
+        if (!response.ok) {
+          throw new Error(json.message)
+        }
+
+        return json
+      })
+
+      if (!regions?.length) {
+        throw new Error(
+          "No regions found. Please set up regions in your Medusa Admin."
+        )
       }
 
-      return json
-    })
-
-    if (!regions?.length) {
-      throw new Error(
-        "No regions found. Please set up regions in your Medusa Admin."
-      )
-    }
-
-    // Create a map of country codes to regions.
-    regions.forEach((region: HttpTypes.StoreRegion) => {
-      region.countries?.forEach((c) => {
-        regionMapCache.regionMap.set(c.iso_2 ?? "", region)
+      // Create a map of country codes to regions.
+      regions.forEach((region: HttpTypes.StoreRegion) => {
+        region.countries?.forEach((c) => {
+          regionMapCache.regionMap.set(c.iso_2 ?? "", region)
+        })
       })
-    })
 
-    regionMapCache.regionMapUpdated = Date.now()
+      regionMapCache.regionMapUpdated = Date.now()
+    } catch (error) {
+      // If backend fetch fails, use fallback region for booking-only mode
+      if (!regionMap.has(DEFAULT_REGION)) {
+        const fallbackRegion: HttpTypes.StoreRegion = {
+          id: "fallback",
+          name: "Default",
+          currency_code: "usd",
+          countries: [{ iso_2: DEFAULT_REGION }],
+        } as HttpTypes.StoreRegion
+        regionMapCache.regionMap.set(DEFAULT_REGION, fallbackRegion)
+      }
+    }
   }
 
   return regionMapCache.regionMap
