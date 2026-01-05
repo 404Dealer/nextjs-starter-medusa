@@ -28,10 +28,14 @@ export default function AppointmentPicker({
   const [error, setError] = useState<string | null>(null)
 
   // Generate dates for the next 30 days (excluding past dates)
+  // Use local date components to avoid UTC conversion issues
   const availableDates = Array.from({ length: 30 }, (_, i) => {
     const d = new Date()
     d.setDate(d.getDate() + i)
-    return d.toISOString().split("T")[0]
+    const year = d.getFullYear()
+    const month = String(d.getMonth() + 1).padStart(2, "0")
+    const day = String(d.getDate()).padStart(2, "0")
+    return `${year}-${month}-${day}`
   })
 
   // Fetch available slots when date changes
@@ -75,15 +79,21 @@ export default function AppointmentPicker({
   }
 
   const formatDateForDisplay = (dateStr: string) => {
-    const d = new Date(dateStr)
+    // Parse the date string as local date (not UTC)
+    const [year, month, day] = dateStr.split("-").map(Number)
+    const d = new Date(year, month - 1, day)
+
     const today = new Date()
+    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`
+
     const tomorrow = new Date()
     tomorrow.setDate(tomorrow.getDate() + 1)
+    const tomorrowStr = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, "0")}-${String(tomorrow.getDate()).padStart(2, "0")}`
 
-    if (dateStr === today.toISOString().split("T")[0]) {
+    if (dateStr === todayStr) {
       return "Today"
     }
-    if (dateStr === tomorrow.toISOString().split("T")[0]) {
+    if (dateStr === tomorrowStr) {
       return "Tomorrow"
     }
 
