@@ -28,15 +28,27 @@ export default async function Nav() {
           <div className="flex items-center h-full">
             <LocalizedClientLink
               href="/"
-              className="txt-compact-xlarge-plus hover:text-ui-fg-base uppercase"
+              className="txt-compact-xlarge-plus hover:text-ui-fg-base uppercase font-bold"
               data-testid="nav-store-link"
             >
-              Medusa Store
+              Classic Cuts
             </LocalizedClientLink>
           </div>
 
           <div className="flex items-center gap-x-6 h-full flex-1 basis-0 justify-end">
             <div className="hidden small:flex items-center gap-x-6 h-full">
+              <LocalizedClientLink
+                className="hover:text-ui-fg-base"
+                href="/services"
+              >
+                Services
+              </LocalizedClientLink>
+              <LocalizedClientLink
+                className="hover:text-ui-fg-base font-medium"
+                href="/book"
+              >
+                Book Now
+              </LocalizedClientLink>
               <LocalizedClientLink
                 className="hover:text-ui-fg-base"
                 href="/account"
