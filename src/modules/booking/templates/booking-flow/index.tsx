@@ -1,7 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import ServiceSelection, { BarberService, BARBER_SERVICES } from "@modules/booking/components/service-selection"
+import ServiceSelection from "@modules/booking/components/service-selection"
+import { BarberService } from "@modules/booking/data/services"
 import AppointmentPicker from "@modules/booking/components/appointment-picker"
 import BookingSummary from "@modules/booking/components/booking-summary"
 

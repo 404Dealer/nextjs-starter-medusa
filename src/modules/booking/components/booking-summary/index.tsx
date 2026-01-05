@@ -1,4 +1,4 @@
-import { BarberService } from "@modules/booking/components/service-selection"
+import { BarberService } from "@modules/booking/data/services"
 
 interface BookingSummaryProps {
   service: BarberService | null

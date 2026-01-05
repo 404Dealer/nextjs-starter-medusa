@@ -1,62 +1,11 @@
 import { Metadata } from "next"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
+import { BARBER_SERVICES } from "@modules/booking/data/services"
 
 export const metadata: Metadata = {
   title: "Our Services | Classic Cuts Barbershop",
   description: "View our full range of haircuts and grooming services. From classic cuts to hot towel shaves.",
 }
-
-// Services data - same as in service-selection component
-const SERVICES = [
-  {
-    id: "haircut",
-    name: "Classic Haircut",
-    description: "Traditional cut with clippers and scissors. Includes consultation, wash, cut, and style.",
-    duration: 30,
-    price: 25,
-    icon: "✂️",
-  },
-  {
-    id: "haircut-beard",
-    name: "Haircut + Beard Trim",
-    description: "Full haircut with beard shaping and trim. The complete grooming package.",
-    duration: 45,
-    price: 40,
-    icon: "💈",
-  },
-  {
-    id: "beard-trim",
-    name: "Beard Trim",
-    description: "Shape and trim your beard to perfection. Includes hot towel and beard oil.",
-    duration: 20,
-    price: 15,
-    icon: "🧔",
-  },
-  {
-    id: "hot-towel-shave",
-    name: "Hot Towel Shave",
-    description: "Luxurious straight razor shave with hot towel treatment. The ultimate classic experience.",
-    duration: 30,
-    price: 35,
-    icon: "🪒",
-  },
-  {
-    id: "kids-cut",
-    name: "Kids Haircut",
-    description: "Haircut for children under 12. Patient and friendly service for our youngest customers.",
-    duration: 20,
-    price: 18,
-    icon: "👦",
-  },
-  {
-    id: "buzz-cut",
-    name: "Buzz Cut",
-    description: "Quick and clean all-over clipper cut. Simple, efficient, always sharp.",
-    duration: 15,
-    price: 15,
-    icon: "⚡",
-  },
-]
 
 export default function ServicesPage() {
   return (
@@ -73,7 +22,7 @@ export default function ServicesPage() {
         </div>
 
         <div className="grid grid-cols-1 small:grid-cols-2 gap-6 mb-12">
-          {SERVICES.map((service) => (
+          {BARBER_SERVICES.map((service) => (
             <div
               key={service.id}
               className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg transition-shadow duration-200"
